@@ -1,0 +1,8 @@
+openai
+python-dotenv
+pypdf
+chromadb
+tiktoken
+uuid
+sentence-transformers
+torch
