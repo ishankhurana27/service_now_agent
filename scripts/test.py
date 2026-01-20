@@ -9,7 +9,7 @@ def detect_intent(user_query: str, has_context: bool):
     if not has_context:
         return CHUNK_TEXT
 
-    sql_keywords = ["sql", "query", "select", "update", "insert", "delete", "script"]
+    sql_keywords = ["sql", "query", "select", "update", "insert", "delete", "script","give me queries","give me steps","please give me steps","please give me queries","please give me script","how to execute","give me steps to execute"]
     for kw in sql_keywords:
         if kw in user_query.lower():
             return CHUNK_SQL
@@ -53,8 +53,22 @@ def run_cli():
             # 🔥 CROSS-ENCODER RUNS ONLY HERE
             reranked = rerank_chunks(user_query, docs, metas, top_k=10)
 
-            last_article_id = reranked[0][1]["article_id"]
+            # last_article_id = reranked[0][1]["article_id"]
+            # print(f"\n🔒 Context locked to Article: {last_article_id}")
+            # 🔑 PRIORITY: SHORT_DESCRIPTION decides article
+            short_desc_hits = [
+                (doc, meta)
+                for doc, meta in reranked
+                if meta.get("chunk_role") == "SHORT_DESCRIPTION"
+            ]
+
+            if short_desc_hits:
+                last_article_id = short_desc_hits[0][1]["article_id"]
+            else:
+                last_article_id = reranked[0][1]["article_id"]
+
             print(f"\n🔒 Context locked to Article: {last_article_id}")
+
 
             final_results = [
                 (doc, meta)
