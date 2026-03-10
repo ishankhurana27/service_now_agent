@@ -1,0 +1,56 @@
+pdf KB0016453
+
+- Which database and schema should be checked for VRS access issues?
+sql- g  
+
+
+pdf-KB0015865
+Who should be notified when the GOLD DC852 job is delayed?
+give me scripts to execute the query
+
+
+pdf-KB0015742
+why are vendors not recieving matching dropship
+what steps should be followed for this
+please give me scripts to execute this
+
+KB0013432
+what was the impact and workaround for audit log ids that are not yet processed
+
+
+KB0013290
+How can an employee change their address before their W-2 is processed?
+What is the deadline to update an address to ensure it reflects on the W-2?
+What is the benefit of going paperless for W-2 delivery?
+
+
+KB0013282
+What does the abbreviation “SSN” stand for?
+When will employees receive their W-2 forms?
+How can an employee check which address Dollar General has on file?
+
+
+KB0013448
+whats the exact issue in PIM Missing Item Code
+give scripts to solve this
+
+
+give me resolving steps
+===================================================================================================
+
+KB0015105
+Why did the ALDATAPROD disloadpia job fail and what error was reported?
+give me the steps to solve the problem
+
+
+KB0013290
+How can an employee change their address before their W-2 is processed?
+can you tell me which steps do i have to take over at DGme self service
+
+KB0010360
+give me installation steps of Veritas
+
+KB0020281
+“What should be done when this scheduled process fails?
+what is the analysis
+what is the query used here

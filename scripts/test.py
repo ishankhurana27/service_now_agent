@@ -1,3 +1,12 @@
+import phoenix as px
+from phoenix.trace import register
+
+register(project_name="servicenow-pdf-sql-rag")
+px.launch_app()
+
+
+
+
 from app.retrieval.cross_encoder_reranker import rerank_chunks
 from app.embeddings.embedder import embed_text
 from app.vector_store.chroma_store import query_chunks

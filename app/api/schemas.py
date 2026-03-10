@@ -10,6 +10,7 @@ class IngestResponse(BaseModel):
 class QueryRequest(BaseModel):
     query: str = Field(..., min_length=1)
     session_id: Optional[str] = None
+    reset_session: Optional[bool] = False
 
 
 class QueryResponse(BaseModel):

@@ -1,74 +1,86 @@
 import re
 
-START_MARKERS = [
-    "Short Description",
-    "Issue:",
-    "Incident:",
-    "Problem:",
-    "Analysis:"
-]
 
-# ❌ Removed "ServiceNow Service Management" from here
-END_MARKERS = [
-    "Meta:",
-    "Wiki:",
-    "Feedback",
-    "Approvals",
-    "Article Versions",
-    "Related Articles",
-    "Related Catalog Items"
-]
+# -----------------------------
+# START of Article Body
+# -----------------------------
+ARTICLE_BODY_START = re.compile(
+    r"^\s*article\s+body\s*:\s*$",
+    re.IGNORECASE
+)
 
-# Page noise patterns (DO NOT end article)
-PAGE_NOISE_PATTERNS = [
-    re.compile(r"servicenow service management", re.IGNORECASE),
-    re.compile(r"https?://.*servicenow", re.IGNORECASE),
-    re.compile(r"^\s*\d+/\d+\s*$"),            # 1/3, 2/3
-    re.compile(r"\d{1,2}/\d{1,2}/\d{2,4}"),    # timestamps
-]
+# -----------------------------
+# TRUE END markers (ServiceNow)
+# -----------------------------
+ARTICLE_BODY_END = re.compile(
+    r"^\s*(meta:|wiki:|affected products|feedback|knowledge related)\s*$",
+    re.IGNORECASE
+)
 
+# -----------------------------
+# Noise patterns (DO NOT STOP)
+# -----------------------------
+PAGE_HEADER_FOOTER = re.compile(
+    r"(servicenow service management|\d{1,2}/\d{1,2}/\d{2,4}|\d+:\d+\s*(am|pm))",
+    re.IGNORECASE
+)
 
-def is_page_noise(line: str) -> bool:
-    return any(p.search(line) for p in PAGE_NOISE_PATTERNS)
+URL_PATTERN = re.compile(r"https?://", re.IGNORECASE)
 
 
 def extract_article_body(parsed_pdf: dict) -> str:
-    raw_text = parsed_pdf.get("article_body", "")
-    lines = raw_text.splitlines()
+    """
+    Extract ONLY the ServiceNow Article Body section.
 
-    start_idx = None
-    end_idx = len(lines)
+    Rules:
+    - Start ONLY after 'Article body:'
+    - Stop ONLY at Meta / Wiki / Feedback / Affected Products
+    - DO NOT stop on page breaks, dashed lines, headers, timestamps
+    - Preserve SQL, email templates, steps, formatting
+    """
 
-    # -----------------------------
-    # Find START of article body
-    # -----------------------------
-    for i, line in enumerate(lines):
-        if any(m.lower() in line.lower() for m in START_MARKERS):
-            start_idx = i
-            break
-
-    if start_idx is None:
+    raw_text = parsed_pdf.get("raw_text", "")
+    if not raw_text:
         return ""
 
-    # -----------------------------
-    # Find END of article body
-    # (ignore page noise)
-    # -----------------------------
-    for i in range(start_idx + 1, len(lines)):
-        line = lines[i]
+    lines = raw_text.splitlines()
 
-        if is_page_noise(line):
+    in_body = False
+    body_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+
+        # -----------------------------
+        # Detect Article Body START
+        # -----------------------------
+        if not in_body:
+            if ARTICLE_BODY_START.match(stripped):
+                in_body = True
             continue
 
-        if any(m.lower() in line.lower() for m in END_MARKERS):
-            end_idx = i
+        # -----------------------------
+        # Detect Article Body END
+        # -----------------------------
+        if ARTICLE_BODY_END.match(stripped):
             break
 
-    article_lines = []
-
-    for line in lines[start_idx:end_idx]:
-        if is_page_noise(line):
+        # -----------------------------
+        # Ignore obvious noise
+        # -----------------------------
+        if not stripped:
+            body_lines.append("")  # preserve paragraph spacing
             continue
-        article_lines.append(line)
 
-    return "\n".join(article_lines).strip()
+        if PAGE_HEADER_FOOTER.search(stripped):
+            continue
+
+        if URL_PATTERN.search(stripped):
+            continue
+
+        # -----------------------------
+        # Keep EVERYTHING else
+        # -----------------------------
+        body_lines.append(line)
+
+    return "\n".join(body_lines).strip()
