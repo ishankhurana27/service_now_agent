@@ -1,15 +1,17 @@
 import chromadb
 
-client = chromadb.PersistentClient(path="chroma_db")
+_client = None
+_collection = None
 
-collection = client.get_or_create_collection(
-    name="sql_text_kb"
-)
+def get_collection():
+    global _client, _collection
+    if _collection is None:
+        _client = chromadb.PersistentClient(path="chroma_db")
+        _collection = _client.get_or_create_collection(name="sql_text_kb")
+    return _collection
 
-# -------------------------
-# ADD CHUNK
-# -------------------------
 def add_chunk(embedding, content, metadata):
+    collection = get_collection()
     collection.add(
         embeddings=[embedding],
         documents=[content],
@@ -17,24 +19,15 @@ def add_chunk(embedding, content, metadata):
         ids=[metadata["chunk_id"]],
     )
 
-
-# -------------------------
-# VECTOR QUERY (PRIMARY)
-# -------------------------
 def query_chunks(query_embedding, n_results=10, article_id=None):
+    collection = get_collection()
     where_clause = {"article_id": article_id} if article_id else None
-
     return collection.query(
         query_embeddings=[query_embedding],
         n_results=n_results,
         where=where_clause
     )
 
-
 def fetch_chunks_by_article(article_id: str):
-    """
-    Fetch ALL chunks of an article WITHOUT embeddings.
-    """
-    return collection.get(
-        where={"article_id": article_id}
-    )
+    collection = get_collection()
+    return collection.get(where={"article_id": article_id})

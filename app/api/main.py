@@ -17,14 +17,16 @@ from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExport
 trace.set_tracer_provider(TracerProvider())
 provider = trace.get_tracer_provider()
 
-provider.add_span_processor(
-    BatchSpanProcessor(
-        OTLPSpanExporter(
-            endpoint="http://localhost:4317",
-            insecure=True
+import os
+if os.getenv("ENABLE_OTEL", "false").lower() == "true":
+    provider.add_span_processor(
+        BatchSpanProcessor(
+            OTLPSpanExporter(
+                endpoint="http://localhost:4317",
+                insecure=True
+            )
         )
     )
-)
 
 # -------------------------------
 # FastAPI app
